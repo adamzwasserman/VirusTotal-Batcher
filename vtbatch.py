@@ -8,25 +8,25 @@ import arrow
 import vt_functions as vt
 
 #  Globals
-final_results  = []
-
+final_results = []
 
 #  Main program
 #  Prompt the user to choose what kind of lookup to perform
 while True:
     try:
-        filetype = int(input("\n\nYou MUST have a file named VTlookup.txt in the same folder as the VTLookup.py program. \n"
-                     "The file MUST be one of the three types below: \n\n"
-                     "(1) Domain Names             **(no http:// or https:// on any of the lines)\n"
-                     "(2) URLs (lookup)            **(all lines must start with http:// or https://)\n"
-                     "(3) URLs (force a scan)      **(all lines must start with http:// or https://)\n"
-                     "(4) IP Addresses             **(only IP addresses; 'slash' notation is allowed, e.g. 192.168.0.0/16)\n\n"
-                     "Please enter the number for the type of file: "))
+        filetype = int(
+            input("\n\nYou MUST have a file named VTlookup.txt in the same folder as the VTLookup.py program. \n"
+                  "The file MUST be one of the three types below: \n\n"
+                  "(1) Domain Names             **(no http:// or https:// on any of the lines)\n"
+                  "(2) URLs (lookup)            **(all lines must start with http:// or https://)\n"
+                  "(3) URLs (force a scan)      **(all lines must start with http:// or https://)\n"
+                  "(4) IP Addresses             **(only IP addresses; 'slash' notation is allowed, e.g. 192.168.0.0/16)\n\n"
+                  "Please enter the number for the type of file: "))
     except ValueError:
         print('\n***Please type a number: 1, 2, or 3***')
         continue
 
-    if not filetype <5:
+    if not filetype < 5:
         print('\n***Please type a number: 1, 2, or 3***')
         continue
 
@@ -40,14 +40,14 @@ suspects.close()
 
 #  Validate that the file has only one type of lookup value and report back to the user if there are problems
 errors = 0
-filetype_text = {1:'a Domain Name',2:'a URL',3:'an IP Address'}
+filetype_text = {1: 'a Domain Name', 2: 'a URL', 3: 'an IP Address'}
 for index, lookup_value in enumerate(list_to_process):
     lookup_value = lookup_value.strip()
 
     if vt.is_ip(lookup_value) is True:
         if filetype is not 4:
             print("Line ", index + 1, " is an IP address, not", filetype_text.get(filetype))
-            errors +=1
+            errors += 1
 
     elif vt.is_url(lookup_value) is True:
         if filetype is not 2 and filetype is not 3:
@@ -64,7 +64,7 @@ for index, lookup_value in enumerate(list_to_process):
         errors += 1
 
 if errors > 0:
-    print('\n***The',errors,'lines above need to be corrected before this file can be processed***')
+    print('\n***The', errors, 'lines above need to be corrected before this file can be processed***')
     exit()
 else:
     print('Starting lookups...')
@@ -75,16 +75,19 @@ if filetype is 1:
     spacer = [('', '', '', '', '', '', '')]
     def lookup(domain):
         return vt.lookup_domains(domain)
+
 elif filetype is 2:
     final_results = [('Lookup Value', 'Score', 'Date', 'VT Result Status', 'URL')]
     spacer = []
     def lookup(url):
         return vt.lookup_urls(url)
+
 elif filetype is 3:
     final_results = [('Lookup Value', 'Score', 'Date', 'VT Result Status', 'URL')]
     spacer = []
     def lookup(url):
         return vt.force_urls(url)
+
 elif filetype is 4:
     final_results = [('Lookup Value', 'VT Result Status', 'Date', 'A Record', 'URLs', 'Score')]
     spacer = [('', '', '', '', '', '')]
@@ -94,20 +97,31 @@ elif filetype is 4:
 #  Do the lookups
 job_start_time = arrow.now()
 outof = len(list_to_process)
+error_list = []
 
 for index, item in enumerate(list_to_process):
     print('Looking up ', index + 1, 'out of', outof, ':', item)
-    final_results.extend(lookup(item))
+    good, bad = lookup(item)
+    final_results.extend(good)
     final_results.extend(spacer)
+    error_list.extend(bad)
 
 job_finish_time = arrow.now()
 print("Ended job at: ", arrow.utcnow().format('YYYY-MM-DD HH:mm:ss'), "and took ",
-      vt.td_format(job_finish_time-job_start_time),"to run.")
+      vt.td_format(job_finish_time - job_start_time), "to run.")
 
-#  Write it out to a timestamped results file (excel flavoured csv)
-csvname = "VT Lookup Results " +  arrow.now().format('YYYY-MM-DD HH-mm-a')+".csv"
-with open(csvname, 'w',newline='') as csvfile:
+#  Write out a timestamped results file (excel flavoured csv)
+csvname = "VT Lookup Results " + arrow.now().format('YYYY-MM-DD HH-mm-a') + ".csv"
+with open(csvname, 'w', newline='') as csvfile:
     writer = csv.writer(csvfile, dialect='excel')
     writer.writerows(final_results)
+    csvfile.flush()
+csvfile.close()
+
+#  Write out a timestamped error file (excel flavoured csv)
+csvname = "VT Lookup Errors " + arrow.now().format('YYYY-MM-DD HH-mm-a') + ".csv"
+with open(csvname, 'w', newline='') as csvfile:
+    writer = csv.writer(csvfile, dialect='excel')
+    writer.writerows(error_list)
     csvfile.flush()
 csvfile.close()
