@@ -158,16 +158,18 @@ def force_urls(vt_lookup_value):
     with urllib.request.urlopen(response) as response:
         the_page = response.read()
     response_json = json.loads(the_page)
+    vt_status = response_json['verbose_msg']
+    vt_score = ''
+    vt_date = ''
+    vt_url = ''
 
     try:
-        vt_score = ''
         vt_date = response_json['scan_date']
-        vt_status = response_json['verbose_msg']
         vt_url = response_json['url']
-        list_to_return = [(vt_lookup_value, vt_score, vt_date, vt_status, vt_url)]
     except KeyError:
         pass
 
+    list_to_return = [(vt_lookup_value, vt_score, vt_date, vt_status, vt_url)]
     list_to_return.extend(lookup_urls(vt_lookup_value))
 
     return list_to_return
