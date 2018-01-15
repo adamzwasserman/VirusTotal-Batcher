@@ -28,6 +28,7 @@ VTB requires Python 3.6. It uses two MIT licensed 3rd party modules. The excelle
 1) Install the three python files (vtbatch.py, VTlookup.py, config.py) in the directory of your choosing.
 
 2) Open Terminal and type (or copy/paste) the two commands below (both modules use the MIT license):<p>`pip3 install arrow`<p>`pip3 install riprova`
+3) edit the config.py file and replace "pu_APIKEY_here" with your own APIKey
 
 To run the program:
 1) Make sure there is a file named `VTlookup.txt` in the same directory where you put the three files
