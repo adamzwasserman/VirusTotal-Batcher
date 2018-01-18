@@ -69,7 +69,16 @@ if errors > 0:
 else:
     print('Starting lookups...')
 
-#  Set up the header row in the final_results list and tell the program which function to call for each case
+#  Logic block
+#  Reads filetype to determine how to setup the query to VT
+
+#  Layout setup for selected query type.
+#  Sets up the first item in final_results list as a header row with the proper titles.
+#  Sets up the var "spacer"" to add a blank line between queries in domain and IP layouts.
+
+#  Declares function lookup() and loads it with the actual function call for the type.
+#  This way all logic is kept here, main loop has no logic, just always calls lookup().
+
 if filetype is 1:
     final_results = [('Lookup Value', 'VT Result Status', 'IP', 'Date', 'Observed Subdomains', 'URLs', 'Score')]
     spacer = [('', '', '', '', '', '', '')]
@@ -99,6 +108,7 @@ job_start_time = arrow.now()
 outof = len(list_to_process)
 error_list = []
 
+#  Main loop
 for index, item in enumerate(list_to_process):
     print('Looking up ', index + 1, 'out of', outof, ':', item)
     good, bad = lookup(item)
@@ -109,6 +119,7 @@ for index, item in enumerate(list_to_process):
 job_finish_time = arrow.now()
 print("Ended job at: ", arrow.utcnow().format('YYYY-MM-DD HH:mm:ss'), "and took ",
       vt.td_format(job_finish_time - job_start_time), "to run.")
+#  Lookups completed
 
 #  Write out a timestamped results file (excel flavoured csv)
 csvname = "VT Lookup Results " + arrow.now().format('YYYY-MM-DD HH-mm-a') + ".csv"
