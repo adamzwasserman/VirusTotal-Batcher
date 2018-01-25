@@ -30,12 +30,7 @@ def is_ip(lookup_value):
 #  Is lookup_value a URL? (taken from Django, modified ot accept long TLDs)
 def is_url(lookup_value):
     regex = re.compile(
-        r'^https?://'  # has http:// or https://
-        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,20}\.?|'  # has a domain OR
-        r'localhost|'  # is localhost OR
-        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # has an ip
-        r'(?::\d+)?'  # may have port
-        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+                r'(^https?://)([^\/]+?\.)([^\/]+/?)(.+)', re.IGNORECASE) #  (http(s)://) (hostname) (domain name) (params)
     if lookup_value is not None and regex.search(lookup_value):
         return True
 
