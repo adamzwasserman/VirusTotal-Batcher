@@ -46,21 +46,21 @@ for index, lookup_value in enumerate(list_to_process):
 
     if vt.is_ip(lookup_value) is True:
         if filetype is not 4:
-            print("Line ", index + 1, " is an IP address, not", filetype_text.get(filetype))
+            print("Line ", index + 1, lookup_value, " is an IP address, not", filetype_text.get(filetype))
             errors += 1
 
     elif vt.is_url(lookup_value) is True:
         if filetype is not 2 and filetype is not 3:
-            print("Line ", index + 1, " is a URL, not", filetype_text.get(filetype))
+            print("Line ", index + 1, lookup_value, " is a URL, not", filetype_text.get(filetype))
             errors += 1
 
     elif vt.is_domain(lookup_value) is True:
         if filetype is not 1:
-            print("Line ", index + 1, " is a Domain Name, not", filetype_text.get(filetype))
+            print("Line ", index + 1, lookup_value, " is a Domain Name, not", filetype_text.get(filetype))
             errors += 1
 
     else:
-        print("Line ", index + 1, " is not a valid Domain Name or IP or URL")
+        print("Line ", index + 1, lookup_value, " is not a valid Domain Name or IP or URL")
         errors += 1
 
 if errors > 0:
