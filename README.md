@@ -1,10 +1,13 @@
 # VTB (VirusTotal Batch Processer)
-VTB is a command line program for  anyone who uses VirusTotal for mass lookups (or submissions) of domain names, IPs, and urls.
+VTB is a CLI program for  anyone who uses VirusTotal for mass lookups (or submissions) of domain names, IPs, and urls.
+
+Designed by Spamfighter, coded by Adam
 
 ## Notable Features
 
- - IP addresses can be input individually or as CIDR notation
- -  VTB optionally performs live A resolutions in conjunction with Passive DNS data 
+ - IP addresses can be input individually or as **CIDR notation**
+ -  VTB optionally performs **Live A resolutions** in conjunction with Passive DNS data
+ -  A **Force Submit** function to prompt VT to scan URLs for scoring or re-scoring.
 - Timestamped 'results' and 'failure' csv output files
  - A "sane" columnar layout
  - Expansion of VT results into multiple rows allowing for sorting and other data manipulation in a non-destructive manner
@@ -18,8 +21,8 @@ VTB is a command line program for  anyone who uses VirusTotal for mass lookups (
 	 - home path (needed for server mode)
 
 ## Requirements
-- Internet access
-- Python 3.6 or higher
+- Internet access.
+- Python 3.6 or higher.
 - A VirusTotal [Account](https://www.virustotal.com/#/join-us)
 - A VirusTotal [APIkey](https://www.virustotal.com/#/settings/apikey)
 - The following MIT licensed 3rd party python modules:
@@ -76,3 +79,24 @@ If Python 3.6 *IS* installed we need to know if it has been installed using home
     sudo ./Install\ Certificates.command
 
 6) All done - Please note: you still will not see Python in `brew list` after doing this.
+
+## License (MIT)
+Copyright (c) 2018 Adam Z. Wasserman, Neil Schwartzman
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
