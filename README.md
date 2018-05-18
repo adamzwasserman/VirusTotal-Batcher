@@ -33,7 +33,7 @@ Designed by Spamfighter, coded by Adam
 
 # Installation
 
-##Basic instructions
+## Basic instructions
 
 1) Install the four python files (`vtbatch.py`, `vt_functions.py`, `vtconfig.py`, `dns_https.py`) in the directory of your choosing.
 
@@ -45,7 +45,7 @@ Designed by Spamfighter, coded by Adam
 
 5) Run the program, feel the power.
 
-##server_mode
+## server_mode
 
 Change `server_friendly = 'no'` into `server_friendly = 'yes'`
 
@@ -54,7 +54,7 @@ Set a home path. This is the directory in which VTBatch will look for the `VTLoo
 The program will also log results and errors to files on the server wich have timestamp and username in the filename.
 
 
-##Macintosh users
+## Macintosh users
 
 If you are on a Macintosh, be aware that the python.org installer installs its own
 version of OpenSSL that will not access the system certificates. This will cause OpenSSL to
