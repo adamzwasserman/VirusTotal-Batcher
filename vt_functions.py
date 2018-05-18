@@ -1,18 +1,21 @@
+#  VTB 1.2.3 May 17, 2018
+
 #  Python 3.6 modules
 import re
 import ipaddress
+import time
 import urllib.request
 import urllib.parse
 import urllib.error
 import json
-import time
 
 #  MIT licensed 3rd party modules
 import riprova
 
-#  import config data and grab api_key
-import config as cfg
+#  import config data and grab at_api_key
+import vtconfig as cfg
 
+# Grab VirusTotal API key
 api_key = cfg.api_key
 
 
@@ -55,59 +58,72 @@ def on_retry(err, next_try):
 
 #  Function to lookup Domains
 @riprova.retry(
-    backoff=riprova.ExponentialBackOff(interval=1, factor=0.5, max_interval=60, max_elapsed=900, multiplier=1.5),
+    backoff=riprova.ExponentialBackOff(interval=20, factor=0.5, max_interval=60, max_elapsed=900, multiplier=1),
     on_retry=on_retry)
 def lookup_domains(vt_lookup_value):
     list_to_return = []
+    returned_urls = []
     error_to_return = []
+    hostname_count = 0
     url = 'https://www.virustotal.com/vtapi/v2/domain/report'
     parameters = {'domain': vt_lookup_value, 'apikey': api_key}
 
     try:
         response = urllib.request.urlopen('%s?%s' % (url, urllib.parse.urlencode(parameters))).read()
         time.sleep(cfg.request_wait)
-        response_json = json.loads(response)
+
+        try:
+            response_json = json.loads(response)
+        except:
+            print("***The VT server is rate-limiting you, retrying...***")
 
         if response_json['response_code'] is 1:
             vt_status = response_json['verbose_msg']
-            vt_ip = ''
-            vt_date = ''
-            vt_subdomain = ''
-            vt_url = ''
-            vt_score = ''
-            list_to_return = [(vt_lookup_value, vt_status, vt_ip, vt_date, vt_subdomain, vt_url, vt_score)]
-            vt_status = ''
+
+            # whois code is not used but left in to be used in future versions
+            vt_last_resolved = vt_ip = vt_subdomain = vt_live = vt_last_scanned = vt_url = vt_score = ''
 
             try:
                 if response_json['resolutions']:
+                    i = 0
                     for _ in response_json['resolutions']:
-                        vt_ip = response_json['resolutions'][0]['ip_address']
-                        vt_date = response_json['resolutions'][0]['last_resolved']
+                        vt_ip = response_json['resolutions'][i]['ip_address']
+                        vt_last_resolved = response_json['resolutions'][i]['last_resolved']
                         list_to_return.append(
-                            (vt_lookup_value, vt_status, vt_ip, vt_date, vt_subdomain, vt_url, vt_score))
+                            [vt_lookup_value, vt_last_resolved, vt_ip, vt_subdomain, vt_live,
+                             vt_last_scanned, vt_score, vt_url])
+                        i += 1
                     vt_ip = ''
-                    vt_date = ''
+                    vt_last_resolved = ''
             except KeyError:
                 pass
+
+            vt_last_resolved = vt_ip = vt_subdomain = vt_live = vt_last_scanned = vt_url = vt_score = ''
 
             try:
                 if response_json['subdomains']:
                     for i in response_json['subdomains']:
+                        hostname_count += 1
                         vt_subdomain = i
                         list_to_return.append(
-                            (vt_lookup_value, vt_status, vt_ip, vt_date, vt_subdomain, vt_url, vt_score))
-                    vt_subdomain = ''
+                            [vt_lookup_value, vt_last_resolved, vt_ip, vt_subdomain, vt_live,
+                             vt_last_scanned, vt_score, vt_url])
+                        vt_subdomain = ''
             except KeyError:
                 pass
+
+            vt_last_resolved = vt_ip = vt_subdomain = vt_live = vt_last_scanned = vt_url = vt_score = ''
 
             try:
                 if response_json['detected_urls']:
                     for i in response_json['detected_urls']:
                         vt_url = i['url']
-                        vt_date = i['scan_date']
+                        vt_last_scanned = i['scan_date']
                         vt_score = i['positives']
+                        returned_urls.append((vt_lookup_value, vt_last_scanned, vt_url, vt_score))
                         list_to_return.append(
-                            (vt_lookup_value, vt_status, vt_ip, vt_date, vt_subdomain, vt_url, vt_score))
+                            [vt_lookup_value, vt_last_resolved, vt_ip, vt_subdomain, vt_live,
+                             vt_last_scanned, vt_score, vt_url])
             except KeyError:
                 pass
 
@@ -119,16 +135,18 @@ def lookup_domains(vt_lookup_value):
         vt_status = 'ERROR: ' + e.reason
         error_to_return = [(vt_lookup_value, vt_status)]
 
-    return list_to_return, error_to_return
+    return list_to_return, error_to_return, returned_urls, hostname_count
 
 
 #  Function to lookup URLs
 @riprova.retry(
-    backoff=riprova.ExponentialBackOff(interval=1, factor=0.5, max_interval=60, max_elapsed=900, multiplier=1.5),
+    backoff=riprova.ExponentialBackOff(interval=20, factor=0.5, max_interval=60, max_elapsed=900, multiplier=1),
     on_retry=on_retry)
 def lookup_urls(vt_lookup_value):
     list_to_return = []
     error_to_return = []
+    returned_urls = []
+    hostname_count = 0
     url = 'https://www.virustotal.com/vtapi/v2/url/report'
 
     if vt_lookup_value[-1::] is '/':
@@ -139,15 +157,19 @@ def lookup_urls(vt_lookup_value):
     try:
         response = urllib.request.urlopen('%s?%s' % (url, urllib.parse.urlencode(parameters))).read()
         time.sleep(cfg.request_wait)
-        response_json = json.loads(response)
 
+        try:
+            response_json = json.loads(response)
+        except:
+            print("***The VT server is rate-limiting you, retrying...***")
+
+        response_json = json.loads(response)
         if response_json['response_code'] is 1:
             try:
                 vt_score = response_json['positives']
                 vt_date = response_json['scan_date']
-                vt_status = response_json['verbose_msg']
                 vt_url = response_json['url']
-                list_to_return = [(vt_lookup_value, vt_score, vt_date, vt_status, vt_url)]
+                list_to_return = [(vt_lookup_value, vt_date, vt_score, vt_url)]
             except KeyError:
                 pass
 
@@ -159,17 +181,19 @@ def lookup_urls(vt_lookup_value):
         vt_status = 'ERROR: ' + e.reason
         error_to_return = [(vt_lookup_value, vt_status)]
 
-    return list_to_return, error_to_return
+    return list_to_return, error_to_return, returned_urls, hostname_count
 
 
 #  Function to force-lookup URLs
 @riprova.retry(
-    backoff=riprova.ExponentialBackOff(interval=1, factor=0.5, max_interval=60, max_elapsed=900, multiplier=1.5),
+    backoff=riprova.ExponentialBackOff(interval=20, factor=0.5, max_interval=60, max_elapsed=900, multiplier=1),
     on_retry=on_retry)
 def force_urls(vt_lookup_value):
     time.sleep(cfg.request_wait)
     list_to_return = []
     error_to_return = []
+    returned_urls = []
+    hostname_count = 0
     url = 'https://www.virustotal.com/vtapi/v2/url/scan'
 
     if vt_lookup_value[-1::] is '/':
@@ -181,97 +205,108 @@ def force_urls(vt_lookup_value):
     data = data.encode('UTF-8')
 
     response = urllib.request.Request(url, data)
+
     with urllib.request.urlopen(response) as response:
         the_page = response.read()
-    response_json = json.loads(the_page)
+        response_json = json.loads(the_page)
+
 
     if response_json['response_code'] is 1:
         vt_status = response_json['verbose_msg']
-        vt_score = ''
         vt_date = ''
-        vt_url = ''
 
         try:
             vt_date = response_json['scan_date']
-            vt_url = response_json['url']
         except KeyError:
             pass
 
-        list_to_return = [(vt_lookup_value, vt_score, vt_date, vt_status, vt_url)]
-        list_to_return.extend(lookup_urls(vt_lookup_value))
+        list_to_return = [(vt_lookup_value, vt_date, vt_status)]
 
     else:
         vt_status = response_json['verbose_msg']
         error_to_return = [(vt_lookup_value, vt_status)]
 
-    return list_to_return, error_to_return
+    return list_to_return, error_to_return, returned_urls, hostname_count
 
 
 #  Function to lookup IPs
 def lookup_ips(passed_value):
+    list_to_return =[]
+    url_list = []
+    error_list = []
     lookup_list = ipaddress.ip_network(passed_value,
                                        strict=False)  # expands CIDR into list of IPs, no effect on single IPs
 
     for vt_lookup_value in lookup_list:
-        print('Looking up', vt_lookup_value, end='..')
-        good, bad = lookup_slash_ips(vt_lookup_value)  # Call subroutine, remember it returns a tuple of lists
+        # print('Looking up', vt_lookup_value)
+        good, bad, urls, hostname_count = lookup_slash_ips(vt_lookup_value)  # Call subroutine, remember it returns a tuple of lists
+        list_to_return.extend(good)
+        error_list.extend(bad)
 
-    return good, bad
-
+    return list_to_return, error_list, url_list, hostname_count
 
 #  Subroutine to step through "slash" IP networks
-@riprova.retry(backoff=riprova.ExponentialBackOff(interval=2, factor=0.5, max_interval=60, max_elapsed=cfg.max_wait,
-                                                  multiplier=1.5), on_retry=on_retry)
+@riprova.retry(backoff=riprova.ExponentialBackOff(interval=20, factor=0.5, max_interval=60, max_elapsed=900,
+                                                  multiplier=1), on_retry=on_retry)
 def lookup_slash_ips(vt_lookup_value):
-    loop_list = []
+    list_to_return = []
     error_to_return = []
+    url_list = []
+    hostname_count = 0
+    vt_asn = vt_last_resolved = vt_hostname = vt_last_scanned = vt_url = vt_score = ''
     url = 'https://www.virustotal.com/vtapi/v2/ip-address/report'
     parameters = {'ip': vt_lookup_value, 'apikey': api_key}
 
     try:
-        print(".", end='')
         response = urllib.request.urlopen('%s?%s' % (url, urllib.parse.urlencode(parameters))).read()
         time.sleep(cfg.request_wait)
+        try:
+            response_json = json.loads(response)
+        except:
+            print("The server is rate-limiting you. The program will retry until the server starts responding again")
+
         response_json = json.loads(response)
-
         if response_json['response_code'] is 1:
-            vt_status = response_json['verbose_msg']
-            vt_date = ''
-            vt_hostname = ''
-            vt_url = ''
-            vt_score = ''
-            loop_list = [(vt_lookup_value, vt_status, vt_date, vt_hostname, vt_url, vt_score)]
-            print(vt_status)
-            vt_status = ''
-
+            vt_asn = vt_last_resolved = vt_hostname = vt_live = vt_last_scanned = vt_url = vt_score = ''
             try:
-                if response_json['resolutions']:
-                    for i in response_json['resolutions']:
-                        vt_date = str(i['last_resolved'])
-                        vt_hostname = str(i['hostname'])
-                        loop_list.append((vt_lookup_value, vt_status, vt_date, vt_hostname, vt_url, vt_score))
+                if response_json['asn']:
+                    vt_asn = response_json['asn']
             except KeyError:
                 pass
 
             try:
+                if response_json['resolutions']:
+                    for i in response_json['resolutions']:
+                        vt_last_resolved = str(i['last_resolved'])
+                        vt_hostname = str(i['hostname'])
+                        hostname_count += 1
+                        list_to_return.append((vt_lookup_value, vt_asn, vt_last_resolved, vt_hostname, vt_live,
+                                               vt_last_scanned, vt_score, vt_url))
+            except KeyError:
+                pass
+
+            vt_asn = vt_last_resolved = vt_hostname = vt_live = vt_last_scanned = vt_url = vt_score = ''
+
+            try:
                 if response_json['detected_urls']:
                     for i in response_json['detected_urls']:
-                        vt_date = str(i['scan_date'])
+                        vt_last_scanned = str(i['scan_date'])
                         vt_url = str(i['url'])
                         vt_score = str(i['positives'])
-                        loop_list.append((vt_lookup_value, vt_status, vt_date, vt_hostname, vt_url, vt_score))
+                        list_to_return.append((vt_lookup_value, vt_asn, vt_last_resolved, vt_hostname, vt_live,
+                                               vt_last_scanned, vt_score, vt_url))
             except KeyError:
                 pass
         else:
             vt_status = response_json['verbose_msg']
             error_to_return = [(vt_lookup_value, vt_status)]
 
-        return loop_list, error_to_return
+        return list_to_return, error_to_return, url_list, hostname_count
 
     except urllib.error.URLError as e:
         vt_status = 'ERROR: ' + e.reason
         error_to_return = [(vt_lookup_value, vt_status)]
-        return loop_list, error_to_return
+        return list_to_return, error_to_return, url_list
 
 
 #  A little date formatter for pretty printing the job timer
@@ -296,3 +331,4 @@ def td_format(td_object):
                 strings.append("%s %ss" % (period_value, period_name))
 
     return ", ".join(strings)
+

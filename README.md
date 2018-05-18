@@ -1,76 +1,78 @@
+# VTB (VirusTotal Batch Processer)
+VTB is a command line program for  anyone who uses VirusTotal for mass lookups (or submissions) of domain names, IPs, and urls.
 
-# VirusTotal-Batcher
+## Notable Features
 
-VTB is a command line program for  anyone who uses VirusTotal primarily for lookups 
-(of domain names, urls, and ips) and wants to do so in batches instead of one by one on the website.
+ - IP addresses can be input individually or as CIDR notation
+ -  VTB optionally performs live A resolutions in conjunction with Passive DNS data 
+- Timestamped 'results' and 'failure' csv output files
+ - A "sane" columnar layout
+ - Expansion of VT results into multiple rows allowing for sorting and other data manipulation in a non-destructive manner
+ - Automatic 'backoff and retry' to allow for the VT Rate limiter (currently a 20 second pause every 4 records when using a public API key)
+ - Operates locally or on the server of your choice
+ - The config file allows you to set all of the below:
+	 - your API Key (mandatory)
+	 - wait-time between queries (to control network usage)
+	 - maximum total amount of time (in seconds) to retry before failing a query
+	 - "server_mode" (see below)
+	 - home path (needed for server mode)
 
-Features:
- - the ability to force a rescan of a list of URLs, 
- - expansion of IP addresses written in CIDR ("slash") notation
- - a "sane" column layout 
- - expansion of VT results into multiple rows
- - a timestamped results file with results from successful queries
- - a timestamped failures files with a list of all the queries that failed 
- 
- also
- 
- - automatic backoff and retry if the VT Rate limiter kicks in 
- - a config file that allows you to set all of the below:
-	 - your own API Key
-	 - rate-limit friendly wait-time between queries (1.5 seconds recommended)
-	 - maximum time in seconds to retire before failing the query
-	 
-# Requirements
-A computer with Python 3.6 or higher installed
-A VirusTotal account (https://www.virustotal.com/#/join-us) 
-A VirusTotal APIkey (https://www.virustotal.com/#/settings/apikey)
+## Requirements
+- Internet access.
+- Python 3.6 or higher.
+- A VirusTotal [Account](https://www.virustotal.com/#/join-us)
+- A VirusTotal [APIkey](https://www.virustotal.com/#/settings/apikey)
+- The following MIT licensed 3rd party python modules:
+    - The excellent `arrow` for better time handling than the built-in python modules
+    - The equally excellent `riprova` which implements backoff and retry as a decorator (easy-peasy)
+    - The superlative `tqdm` which makes all progress visible 
+    - And finally the stalwart `urlquick`, because `requests` is not MIT licensed 
+
+# Installation
+
+##Basic instructions
+
+1) Install the four python files (`vtbatch.py`, `vt_functions.py`, `vtconfig.py`, `dns_https.py`) in the directory of your choosing.
+
+2) Install `urlquick`, `arrow`, `tqdm`, and `riprova`.
+
+3) Edit the `config.py` file and replace `put_APIKEY_here` with your own APIKey, optionally change other params.
+
+4) Make sure there is a file named `VTlookup.txt` in the same directory as the program.
+
+5) Run the program, feel the power.
+
+##server_mode
+
+Change `server_friendly = 'no'` into `server_friendly = 'yes'`
+
+Set a home path. This is the directory in which VTBatch will look for the `VTLookup.txt` file to process, and to which it will save zipped results and errors files.
+
+The program will also log results and errors to files on the server wich have timestamp and username in the filename.
 
 
-# Installation Instructions
-*Special instructions for Macintosh users, see below*
+##Macintosh users
 
-VTB requires Python 3.6. It uses two MIT licensed 3rd party modules. 
-The excellent `arrow` for better time handling than the built-in python modules, 
-and the equally excellent `reprova` which implements backoff and retry as a decorator (easy-peasy).
-
-1) Install the three python files (vtbatch.py, VTlookup.py, config.py) in the directory of your choosing.
-2) Open Terminal and type (or copy/paste) the two commands below (both modules use the MIT license):
-    `pip3 install arrow`
-    `pip3 install riprova`
-3) edit the config.py file and replace "pu_APIKEY_here" with your own APIKey
-
-To run the program:
-1) Make sure there is a file named `VTlookup.txt` in the same directory where you put the three files
-2) Open a terminal, make sure your current directory is the one with the program 
-3) Type: `python3 vtbatch.py`
-4) Feel the power
-
-**===Special instructions for Macintosh users===**
-
-If you are on a Macintosh, be aware that the python.org installer will install its own 
-version of openssl that will not access the system certificates which will cause openssl to 
+If you are on a Macintosh, be aware that the python.org installer installs its own
+version of OpenSSL that will not access the system certificates. This will cause OpenSSL to
 reject the VirusTotal certificate, which in turn will cause the program to fail.
 
-If Python 3.6 is not yet installed, it is better to install it with homebrew than to 
-install it from the python.org installer:
-
-1) install homebrew: open Terminal and type (or copy/paste) the line below (copy everything from "/urs" up to "/install"):
-`/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install`
-2) type (or copy/paste) `brew install python3`
-
-Full - proper - instructions can be found here: http://docs.python-guide.org/en/latest/starting/install3/osx/
+If Python 3.6 *IS NOT* yet installed, install both Python 3.6 and OpenSSL with [homebrew](https://brew.sh).
 
 
-If Python 3.6 IS installed, there are two possible ways it was done. We need to know which one:
+If Python 3.6 *IS* installed we need to know if it has been installed using homebrew or using the python.org installer.
 
-1) open a terminal and type: `brew list`
-2) if you see "python3" in the list, type `brew install openssl` and you are done. Do not go to step 3 and on.
+1) Open a terminal and type: `brew list`.
 
-3) if you do not see "python3" in the list, the Python was not installed using brew. Close Terminal and go to your Applications folder
-4) Find the Python 3.6 Folder and open it. Double click on "Install Certificates.command"
-5) if you see errors, Terminal and type (or copy/paste) the lines below:
-`cd Applications/Python\ 3.6`
-`sudo ./Install\ Certificates.command`
-6) all done - Please note: you still will not see Python in `brew list` after doing this.
+2) If you see "python3" in the list, type `brew install openssl` and you are done. Do not perform anymore steps.
 
-> Written with [StackEdit](https://stackedit.io/).
+3) If you *do not* see "python3" in the list, Python was not installed using brew and you need to copy the system certificates.
+
+4) Find the Python 3.6 Folder and open it. Double click on `Install Certificates.command`
+
+5) In Terminal type (or copy/paste) the lines below:
+
+    cd Applications/Python\ 3.6
+    sudo ./Install\ Certificates.command
+
+6) All done - Please note: you still will not see Python in `brew list` after doing this.
