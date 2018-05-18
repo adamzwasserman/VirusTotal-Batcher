@@ -18,8 +18,8 @@ VTB is a command line program for  anyone who uses VirusTotal for mass lookups (
 	 - home path (needed for server mode)
 
 ## Requirements
-- Internet access.
-- Python 3.6 or higher.
+- Internet access
+- Python 3.6 or higher
 - A VirusTotal [Account](https://www.virustotal.com/#/join-us)
 - A VirusTotal [APIkey](https://www.virustotal.com/#/settings/apikey)
 - The following MIT licensed 3rd party python modules:
