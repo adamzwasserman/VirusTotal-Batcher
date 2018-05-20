@@ -306,7 +306,7 @@ def lookup_slash_ips(vt_lookup_value):
     except urllib.error.URLError as e:
         vt_status = 'ERROR: ' + e.reason
         error_to_return = [(vt_lookup_value, vt_status)]
-        return list_to_return, error_to_return, url_list
+        return list_to_return, error_to_return, url_list, hostname_count
 
 
 #  A little date formatter for pretty printing the job timer
