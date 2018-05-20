@@ -8,9 +8,11 @@ import urllib.request
 import urllib.parse
 import urllib.error
 import json
+import warnings
 
 #  MIT licensed 3rd party modules
 import riprova
+from tqdm import tqdm, TqdmSynchronisationWarning
 
 #  import config data and grab at_api_key
 import vtconfig as cfg
@@ -236,12 +238,14 @@ def lookup_ips(passed_value):
     error_list = []
     lookup_list = ipaddress.ip_network(passed_value,
                                        strict=False)  # expands CIDR into list of IPs, no effect on single IPs
-
-    for vt_lookup_value in lookup_list:
-        # print('Looking up', vt_lookup_value)
-        good, bad, urls, hostname_count = lookup_slash_ips(vt_lookup_value)  # Call subroutine, remember it returns a tuple of lists
-        list_to_return.extend(good)
-        error_list.extend(bad)
+    with warnings.catch_warnings():  # tqdm has a minor bug causing it throw warnings that would just confuse the user
+        warnings.simplefilter("ignore", TqdmSynchronisationWarning)
+        for vt_lookup_value in tqdm(lookup_list, total=len(list(lookup_list)), unit=" IPs from a CIDR block"):
+        # for vt_lookup_value in lookup_list:
+            # print('Looking up', vt_lookup_value)
+            good, bad, urls, hostname_count = lookup_slash_ips(vt_lookup_value)  # Call subroutine, remember it returns a tuple of lists
+            list_to_return.extend(good)
+            error_list.extend(bad)
 
     return list_to_return, error_list, url_list, hostname_count
 
