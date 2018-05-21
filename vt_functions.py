@@ -76,21 +76,19 @@ def lookup_domains(vt_lookup_value):
 
         try:
             response_json = json.loads(response)
+            vt_status = response_json['verbose_msg']
         except:
             print("***The VT server is rate-limiting you, retrying...***")
 
         if response_json['response_code'] is 1:
-            vt_status = response_json['verbose_msg']
-
-            # whois code is not used but left in to be used in future versions
             vt_last_resolved = vt_ip = vt_subdomain = vt_live = vt_last_scanned = vt_url = vt_score = ''
-
             try:
                 if response_json['resolutions']:
                     i = 0
                     for _ in response_json['resolutions']:
                         vt_ip = response_json['resolutions'][i]['ip_address']
                         vt_last_resolved = response_json['resolutions'][i]['last_resolved']
+                        hostname_count += 1
                         list_to_return.append(
                             [vt_lookup_value, vt_last_resolved, vt_ip, vt_subdomain, vt_live,
                              vt_last_scanned, vt_score, vt_url])
@@ -129,8 +127,10 @@ def lookup_domains(vt_lookup_value):
             except KeyError:
                 pass
 
+            if not list_to_return:
+                error_to_return = [(vt_lookup_value, "Domain not found!")]
+
         else:
-            vt_status = response_json['verbose_msg']
             error_to_return = [(vt_lookup_value, vt_status)]
 
     except urllib.error.URLError as e:
@@ -336,3 +336,4 @@ def td_format(td_object):
 
     return ", ".join(strings)
 
+# insert sanity check of raw file lines minus results
