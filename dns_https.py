@@ -63,7 +63,6 @@ class SecureDNS(object):
             if response['Status'] == NOERROR:
                 answers = []
                 for answer in response['Answer']:
-                    answers.append(answer)
                     name, response_type, ttl, data = \
                         map(answer.get, ('name', 'type', 'ttl', 'data'))
                     if response_type in (A, AAAA):
