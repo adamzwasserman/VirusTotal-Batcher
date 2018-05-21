@@ -128,7 +128,7 @@ def lookup_domains(vt_lookup_value):
                 pass
 
             if not list_to_return:
-                error_to_return = [(vt_lookup_value, "Domain not found!")]
+                error_to_return = [(vt_lookup_value, "Domain not found")]
 
         else:
             error_to_return = [(vt_lookup_value, vt_status)]
