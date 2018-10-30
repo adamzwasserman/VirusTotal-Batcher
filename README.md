@@ -1,64 +1,81 @@
-# VTB (VirusTotal Batch Processer)
-VTB is a CLI program for  anyone who uses VirusTotal for mass lookups (or submissions) of domain names, IPs, and urls.
+#VirusTotal Batch Machine Gun
+VirusTotal Machine Gun (VTMG) is a multi-threaded CLI program allowing *massive* queries of IPs, hosts & domains, and URLs at VirusTotal.
 
-Designed by Spamfighter, coded by Adam
+Designed by Spamfighter666, coded by Adam.
 
 ## Notable Features
 
- - IP addresses can be input individually or as **CIDR notation**
- -  VTB optionally performs **Live A resolutions** in conjunction with Passive DNS data
- -  A **Force Submit** function to prompt VT to scan URLs for scoring or re-scoring.
-- Timestamped 'results' and 'failure' csv output files
- - A "sane" columnar layout
- - Expansion of VT results into multiple rows allowing for sorting and other data manipulation in a non-destructive manner
- - Automatic 'backoff and retry' to allow for the VT Rate limiter (currently a 20 second pause every 4 records when using a public API key)
- - Operates locally or on the server of your choice
- - The config file allows you to set all of the below:
-	 - your API Key (mandatory)
-	 - wait-time between queries (to control network usage)
-	 - maximum total amount of time (in seconds) to retry before failing a query
-	 - "server_mode" (see below)
-	 - home path (needed for server mode)
+######  - VTMG can eat individual IPs, or as **CIDR ranges** up to a /16. That's big.
+######  -  If you'd like, VTMG can do ***A Record Resolutions*** so the historical record is juxtaposed with actual state of affairs. A contrast and compare kinda thing.
+######  -  Moreover, VTMG is as **fast *AF***, (thus the Machine Gun bit of the name). How fast? Like I once saw it do 300,000 URLs in under an hour. That's fast. So fast that last night it turned off the light switch in the room and was in bed before the room was dark. That's fast.
+######  -  A **Force Submit** function in VTMG bends VirusTotal to your iron will, and invokes a scan of URLs for scoring or re-scoring. PROTIP: If a domain isn't in the dataset, submit it as a URL and it is resolved. We provide a file for you to be able to do so.
+###### - Timestamped 'results' and 'failure' csv output files. FTW.
+######  - A smart layout that allows sorting in a non-destructive fashion. 
 
+######  - Automatic 'backoff and retry' that can handle the VT Rate limiter (currently a 20 second pause every 4 records when using a public API key) and make it your best friend.
+######  - VTMG can be installed locally or on the server of your choice
+
+The config file allows you to set 
+
+1. 	The wait-time between queries to control network usage. If left alone, VTMG could happily eat them all. In a good way.
+2. The maximum total amount of time to retry before failing a query. Trust me on this, you want control. 
+3. ... all sorts of other stuff like the home path in server mode
+	 
 ## Requirements
-- Internet access.
-- Python 3.6 or higher.
+- Internet access (duh?)
+- Python 3.6 or higher
 - A VirusTotal [Account](https://www.virustotal.com/#/join-us)
 - A VirusTotal [APIkey](https://www.virustotal.com/#/settings/apikey)
-- The following MIT licensed 3rd party python modules:
-    - The excellent `arrow` for better time handling than the built-in python modules
-    - The equally excellent `riprova` which implements backoff and retry as a decorator (easy-peasy)
-    - The superlative `tqdm` which makes all progress visible 
-    - And finally the stalwart `urlquick`, because `requests` is not MIT licensed 
+- The following MIT-licensed 3rd-party Python modules:
+    - The excellent `arrow`, for better time handling than the built-in Python modules
+    - The equally excellent `riprova`, which implements backoff and retry as a decorator as if it were born to do so.
+    - The superlative `tqdm`, which makes all the progress VTMG makes visible for all to see.
+    - `dnspython`, about which we mercifully have no comment
+    - And finally, the stalwart `urlquick` (because `requests` is not MIT licensed)
 
 # Installation
 
 ## Basic instructions
 
-1) Install the four python files (`vtbatch.py`, `vt_functions.py`, `vtconfig.py`, `dns_https.py`) in the directory of your choosing.
+0) If you used the previous version of this tool simply called VirusTotal Batch, delete everything. Throw your computer away, reject all technology, become a Buiddhst monk> But most importantly, these files
+	vtbatch.py	vtconfig.py	dns_https.py
 
-2) Install `urlquick`, `arrow`, `tqdm`, and `riprova`.
+But seriously? Ditch it all. Material goods will be our downfall. Learn an artform and create something. In the meantime ...
 
-3) Edit the `config.py` file and replace `put_APIKEY_here` with your own APIKey, optionally change other params.
+1) Create the following directories
+	/input
+	/logs
+	/program
+	/results/virustotal
+	/support
+	/temp/VT
+	
+	
+2) Install these files into /program
+'config.py''reno.py'
+'vtmachinegun.py'
+'vtmgfunctions.py' 
 
-4) Make sure there is a file named `VTlookup.txt` in the same directory as the program.
 
-5) Run the program, feel the power.
+3) Create a file named `VTlookup.txt` and place it in /input
+
+4) Edit `config.py` and replace `put_APIKEY_here` with your own APIKey, and optionally, tweak the other parameters. See if we care.
+																																																																																																																																																																																																																																																	5) Install `urlquick`, `arrow`, `tqdm`, `dnspython`, and `riprova`. Do it now. you know you wanna.
+
+6) Run the program and **enjoy** the ferocious power of VT Machine Gun. We made it for the likes of you.
 
 ## server_mode
 
 Change `server_friendly = 'no'` into `server_friendly = 'yes'`
 
-Set a home path. This is the directory in which VTBatch will look for the `VTLookup.txt` file to process, and to which it will save zipped results and errors files.
+Set a home path. This is the directory in which VTMG will look for the `VTLookup.txt` file to process, and to which it will save zipped results and errors files.
 
-The program will also log results and errors to files on the server wich have timestamp and username in the filename.
+The program logs results and errors, the output has a timestamp & username in the filename.
 
 
-## Macintosh users
+## Apple OSX users
 
-If you are on a Macintosh, be aware that the python.org installer installs its own
-version of OpenSSL that will not access the system certificates. This will cause OpenSSL to
-reject the VirusTotal certificate, which in turn will cause the program to fail.
+*OUTDATED The information that follows is not the best way to do this. We will update this text shortly*: If you are on OSX, be aware that the python.org installer installs its own version of OpenSSL that will not access the system certificates. This will cause OpenSSL to reject the VirusTotal certificate, which in turn will cause the program to fail.
 
 If Python 3.6 *IS NOT* yet installed, install both Python 3.6 and OpenSSL with [homebrew](https://brew.sh).
 
@@ -79,6 +96,10 @@ If Python 3.6 *IS* installed we need to know if it has been installed using home
     sudo ./Install\ Certificates.command
 
 6) All done - Please note: you still will not see Python in `brew list` after doing this.
+
+## Known Bugs 
+1) A resolutions against CNAME hosts at `Bodis` and `Wildcard UK Limited` come back erroneously in the results file. We're working on it. 
+
 
 ## License (MIT)
 Copyright (c) 2018 Adam Z. Wasserman, Neil Schwartzman
