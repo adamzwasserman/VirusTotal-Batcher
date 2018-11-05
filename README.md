@@ -38,7 +38,9 @@ The config file allows you to set
 ## Basic instructions
 
 0) If you used the previous version of this tool simply called VirusTotal Batch, delete everything. Throw your computer away, reject all technology, become a Buiddhst monk> But most importantly, these files
-	vtbatch.py	vtconfig.py	dns_https.py
+	vtbatch.py
+	vtconfig.py
+	dns_https.py
 
 But seriously? Ditch it all. Material goods will be our downfall. Learn an artform and create something. In the meantime ...
 
@@ -48,11 +50,12 @@ But seriously? Ditch it all. Material goods will be our downfall. Learn an artfo
 	/program
 	/results/virustotal
 	/support
-	/temp/VT
+	/temp
 	
 	
 2) Install these files into /program
-'config.py''reno.py'
+'config.py'
+'reno.py'
 'vtmachinegun.py'
 'vtmgfunctions.py' 
 
