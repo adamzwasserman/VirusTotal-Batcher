@@ -20,7 +20,7 @@ import reno
 import config as cfg
 
 # VirusTotal Batch - Machine Gun
-version_info = (2, 0, 7)
+version_info = (2, 0, 8)
 version = '.'.join(str(c) for c in version_info)
 
 # Globals
@@ -87,8 +87,8 @@ def validate_required_files():
             cfg.home_path)
     except:
         print("\n\n"
-              "***WARNING*** Please setup the program properly by making sure the config.py file is in the same "
-              "directory as vtbatch.py and vt_functions.py"
+              "***WARNING*** Please place the config.py file in"
+              "the same directory as vtmachinegun.py"
               "\n\n")
         sys.exit()
 
@@ -108,14 +108,19 @@ def user_prompt():
         try:
             filetype = int(
                 input("\n\n"
-                      "Make sure that VTlookup.txt contains ONLY one of these types of data:\n"
-                      "    Domain names  (no lines start with http)\n"
-                      "    URLS          (every line starts with http)\n"
-                      "    IP addresses  (the program will accept CIDR notation)\n\n"
-                      "(1) Domain and Host Name Lookup\n"
-                      "(2) IP Address Lookup  (returns pDNS results)\n"
-                      "(3) URL Score Lookup\n"
-                      "(4) Force URL Scoring\n\n"
+                      "VTlookup.txt must only have one type of data in it at a time:\n\n"    
+                      "(1) Domain and Host Name  No entries with http:// or https://\n"
+                      "                          [Results: IPs, sub-domains, and URLs with a VT score of 1 or more]\n"
+                      "                          [Optionally, the current resolution of all resulting hosts]\n\n"
+                      "(2) IP Addresses          Individual IPs or in CIDR Notation\n"
+                      "                          [Results: Hosts and URLs]\n"
+                      "                          [Optionally, the current resolution of all hosts]\n\n"
+                      "(3) URL Score             All entries *must* start with http:// or https://\n"
+                      "                          [Results: URLs with their current VT score\n\n"
+                      "(4) Force URL Scoring     All entries *must* start with http:// or https://\n"
+                      "                          [WARNING: All URLs are scanned, or re-scanned if previously submitted]\n"
+                      "                          [WARNING: This may change historical scores positively, or negatively]\n"
+                      "                          [Results: Confirmation of submission, no scores]\n\n"
                       "Please enter the number for the type of file (or 0 to quit): "))
 
         except ValueError:
@@ -123,7 +128,7 @@ def user_prompt():
             continue
 
         if not filetype < 5:
-            print('\nPlease enter the number for the type of file (or 0 to quit): ')
+            print('\nPlease enter the corresponding number of your query file (or 0 to quit): ')
             continue
 
         elif filetype is 0:
